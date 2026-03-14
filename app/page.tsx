@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { Star, MapPin, Mail, User, CheckCircle, AlertCircle, Loader2, Shield } from "lucide-react";
+import { Star, MapPin, Mail, User, CheckCircle, AlertCircle, Loader2 } from "lucide-react";
 
 type FormState = "idle" | "loading" | "success" | "error";
 
@@ -81,12 +81,6 @@ export default function Home() {
           <div className="h-1.5 bg-gradient-to-r from-[#c8102e] via-[#1a3a6b] to-[#c8102e]" />
 
           <div className="p-8">
-            {/* 조직 이름 */}
-            <div className="flex items-center gap-2 mb-6">
-              <Shield className="w-5 h-5 text-[#1a3a6b]" />
-              <span className="text-[#1a3a6b] font-bold text-lg">카투사 연합회 (KVA)</span>
-            </div>
-
             {formState === "success" ? (
               /* 성공 상태 */
               <div className="text-center py-6">
