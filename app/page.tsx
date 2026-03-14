@@ -92,18 +92,9 @@ export default function Home() {
                 <h2 className="text-xl font-bold text-gray-800 mb-2">
                   가입이 완료되었습니다!
                 </h2>
-                <p className="text-gray-500 text-sm mb-1">
-                  <span className="font-semibold text-[#1a3a6b]">{name}</span>님, 카투사 연합회에 오신 것을 환영합니다.
+                <p className="text-gray-700 text-base">
+                  <span className="font-semibold text-[#1a3a6b]">{name}</span>님, KDVA 회원이 되신 것을 환영합니다.
                 </p>
-                <p className="text-gray-400 text-xs mb-6">
-                  가입 확인 메일을 {email}로 발송했습니다.
-                </p>
-                <button
-                  onClick={handleReset}
-                  className="text-sm text-[#1a3a6b] underline underline-offset-2 hover:text-[#c8102e] transition-colors"
-                >
-                  다른 회원 가입하기
-                </button>
               </div>
             ) : (
               /* 폼 상태 */
