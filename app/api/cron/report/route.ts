@@ -129,7 +129,7 @@ export async function GET(req: NextRequest) {
         `;
 
     const { error: emailError } = await resend.emails.send({
-      from: "KVA 보고서 <report@yourdomain.com>", // Resend에서 인증한 도메인으로 변경
+      from: "KVA 보고서 <onboarding@resend.dev>",
       to: [toEmail],
       subject: `[KVA] ${dateLabel} 신규 회원 보고서 (${memberCount}명)`,
       html: emailBody,
