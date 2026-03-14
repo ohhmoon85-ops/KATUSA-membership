@@ -1,0 +1,16 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  html {
+    font-family: "Pretendard", "Apple SD Gothic Neo", "Noto Sans KR",
+      "Malgun Gothic", sans-serif;
+  }
+}
+
+@layer utilities {
+  .bg-gradient-kva {
+    background: linear-gradient(135deg, #0a1628 0%, #1a3a6b 50%, #0d2a5c 100%);
+  }
+}
