@@ -60,7 +60,7 @@ export default function Home() {
           {/* KVA 배지 */}
           <div className="inline-flex items-center gap-2 bg-[#c8102e] text-white text-sm font-bold px-5 py-2 rounded-full mb-6 shadow-lg shadow-red-900/30">
             <Star className="w-4 h-4 fill-white" />
-            <span>주한미군전우회(KDVA) 회원 가입</span>
+            <span>주한미군전우회(KDVA) 회원 가입 / KDVA Membership</span>
             <Star className="w-4 h-4 fill-white" />
           </div>
 
