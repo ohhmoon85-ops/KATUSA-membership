@@ -66,6 +66,13 @@ export default function Home() {
             <Star className="w-4 h-4 fill-white" />
           </div>
 
+          {/* 무료 가입 강조 배지 */}
+          <div className="inline-flex items-center gap-1.5 bg-white/15 backdrop-blur-sm text-white text-xs font-bold px-4 py-1.5 rounded-full mb-4 border border-white/20">
+            <span className="text-yellow-300">✦</span>
+            <span>무료 가입 / Free to Join</span>
+            <span className="text-yellow-300">✦</span>
+          </div>
+
           {/* 메인 타이틀 */}
           <h1 className="text-white text-2xl font-bold leading-tight mb-2">
             한미동맹에 당신의 한 표를
