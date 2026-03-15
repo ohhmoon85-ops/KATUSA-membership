@@ -4,7 +4,7 @@ import { createAdminClient } from "@/lib/supabase";
 export async function POST(req: NextRequest) {
   try {
     const body = await req.json();
-    const { name, station, email } = body;
+    const { name, rank, station, email } = body;
 
     // ── 입력 검증 ──────────────────────────────────────────────
     if (!name || typeof name !== "string" || name.trim().length === 0) {
@@ -30,6 +30,7 @@ export async function POST(req: NextRequest) {
     }
 
     const cleanName = name.trim().slice(0, 50);
+    const cleanRank = rank ? String(rank).trim().slice(0, 50) : null;
     const cleanStation = station
       ? String(station).trim().slice(0, 100)
       : null;
@@ -58,6 +59,7 @@ export async function POST(req: NextRequest) {
       .insert([
         {
           name: cleanName,
+          rank: cleanRank,
           station: cleanStation,
           email: cleanEmail,
         },

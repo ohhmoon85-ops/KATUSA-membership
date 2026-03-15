@@ -7,6 +7,7 @@ type FormState = "idle" | "loading" | "success" | "error";
 
 export default function Home() {
   const [name, setName] = useState("");
+  const [rank, setRank] = useState("");
   const [station, setStation] = useState("");
   const [email, setEmail] = useState("");
   const [formState, setFormState] = useState<FormState>("idle");
@@ -21,7 +22,7 @@ export default function Home() {
       const res = await fetch("/api/register", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ name, station, email }),
+        body: JSON.stringify({ name, rank, station, email }),
       });
 
       const data = await res.json();
@@ -39,6 +40,7 @@ export default function Home() {
 
   const handleReset = () => {
     setName("");
+    setRank("");
     setStation("");
     setEmail("");
     setFormState("idle");
@@ -122,6 +124,42 @@ export default function Home() {
                       className="w-full pl-10 pr-4 py-3 border border-gray-200 rounded-xl text-gray-800 placeholder-gray-300 focus:outline-none focus:ring-2 focus:ring-[#1a3a6b]/30 focus:border-[#1a3a6b] transition-all disabled:bg-gray-50 disabled:cursor-not-allowed"
                     />
                   </div>
+                </div>
+
+                {/* 계급 필드 */}
+                <div>
+                  <label className="block text-sm font-semibold text-gray-700 mb-1.5">
+                    계급 / Rank
+                    <span className="text-gray-400 font-normal text-xs ml-1">(선택사항 / Optional)</span>
+                  </label>
+                  <select
+                    value={rank}
+                    onChange={(e) => setRank(e.target.value)}
+                    disabled={formState === "loading"}
+                    className="w-full px-4 py-3 border border-gray-200 rounded-xl text-gray-800 focus:outline-none focus:ring-2 focus:ring-[#1a3a6b]/30 focus:border-[#1a3a6b] transition-all disabled:bg-gray-50 disabled:cursor-not-allowed bg-white"
+                  >
+                    <option value="">-- 계급 선택 / Select Rank --</option>
+                    <optgroup label="병 (Enlisted)">
+                      <option value="이병 (Private)">이병 / Private (PVT)</option>
+                      <option value="일병 (PFC)">일병 / Private First Class (PFC)</option>
+                      <option value="상병 (Corporal)">상병 / Corporal (CPL)</option>
+                      <option value="병장 (Sergeant)">병장 / Sergeant (SGT)</option>
+                    </optgroup>
+                    <optgroup label="부사관 (NCO)">
+                      <option value="하사 (Staff Sergeant)">하사 / Staff Sergeant (SSG)</option>
+                      <option value="중사 (Sergeant First Class)">중사 / Sergeant First Class (SFC)</option>
+                      <option value="상사 (Master Sergeant)">상사 / Master Sergeant (MSG)</option>
+                      <option value="원사 (Sergeant Major)">원사 / Sergeant Major (SGM)</option>
+                    </optgroup>
+                    <optgroup label="장교 (Officer)">
+                      <option value="소위 (2nd Lieutenant)">소위 / 2nd Lieutenant (2LT)</option>
+                      <option value="중위 (1st Lieutenant)">중위 / 1st Lieutenant (1LT)</option>
+                      <option value="대위 (Captain)">대위 / Captain (CPT)</option>
+                      <option value="소령 (Major)">소령 / Major (MAJ)</option>
+                      <option value="중령 (Lieutenant Colonel)">중령 / Lieutenant Colonel (LTC)</option>
+                      <option value="대령 (Colonel)">대령 / Colonel (COL)</option>
+                    </optgroup>
+                  </select>
                 </div>
 
                 {/* 복무지역 필드 */}
