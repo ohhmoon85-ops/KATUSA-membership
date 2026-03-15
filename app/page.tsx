@@ -89,11 +89,17 @@ export default function Home() {
                     <CheckCircle className="w-10 h-10 text-green-500" />
                   </div>
                 </div>
-                <h2 className="text-xl font-bold text-gray-800 mb-2">
+                <h2 className="text-xl font-bold text-gray-800 mb-1">
                   가입이 완료되었습니다!
                 </h2>
-                <p className="text-gray-700 text-base">
+                <h2 className="text-sm font-semibold text-gray-500 mb-3">
+                  Registration Complete!
+                </h2>
+                <p className="text-gray-700 text-base mb-1">
                   <span className="font-semibold text-[#1a3a6b]">{name}</span>님, KDVA 회원이 되신 것을 환영합니다.
+                </p>
+                <p className="text-gray-500 text-sm">
+                  Welcome, <span className="font-semibold text-[#1a3a6b]">{name}</span>! You are now a KDVA member.
                 </p>
               </div>
             ) : (
