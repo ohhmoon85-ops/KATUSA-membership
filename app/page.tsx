@@ -158,6 +158,10 @@ export default function Home() {
                       <option value="소령 (Major)">소령 / Major (MAJ)</option>
                       <option value="중령 (Lieutenant Colonel)">중령 / Lieutenant Colonel (LTC)</option>
                       <option value="대령 (Colonel)">대령 / Colonel (COL)</option>
+                      <option value="준장 (Brigadier General)">준장 / Brigadier General (BG)</option>
+                      <option value="소장 (Major General)">소장 / Major General (MG)</option>
+                      <option value="중장 (Lieutenant General)">중장 / Lieutenant General (LTG)</option>
+                      <option value="대장 (General)">대장 / General (GEN)</option>
                     </optgroup>
                   </select>
                 </div>
