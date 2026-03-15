@@ -60,7 +60,7 @@ export default function Home() {
           {/* KVA 배지 */}
           <div className="inline-flex items-center gap-2 bg-[#c8102e] text-white text-sm font-bold px-5 py-2 rounded-full mb-6 shadow-lg shadow-red-900/30">
             <Star className="w-4 h-4 fill-white" />
-            <span>KATUSA 회원 전용</span>
+            <span>주한미군전우회(KDVA) 회원 가입</span>
             <Star className="w-4 h-4 fill-white" />
           </div>
 
@@ -102,7 +102,7 @@ export default function Home() {
                 {/* 이름 필드 */}
                 <div>
                   <label className="block text-sm font-semibold text-gray-700 mb-1.5">
-                    이름 (한글) <span className="text-[#c8102e]">*</span>
+                    이름 (한글) / Name <span className="text-[#c8102e]">*</span>
                   </label>
                   <div className="relative">
                     <User className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
@@ -121,8 +121,8 @@ export default function Home() {
                 {/* 복무지역 필드 */}
                 <div>
                   <label className="block text-sm font-semibold text-gray-700 mb-1.5">
-                    복무지역
-                    <span className="text-gray-400 font-normal text-xs ml-1">(선택사항)</span>
+                    복무지역 / Unit Location
+                    <span className="text-gray-400 font-normal text-xs ml-1">(선택사항 / Optional)</span>
                   </label>
                   <div className="relative">
                     <MapPin className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
@@ -182,6 +182,8 @@ export default function Home() {
 
                 <p className="text-center text-xs text-gray-400 pt-1">
                   가입 시 개인정보는 회원 관리 목적으로만 사용됩니다.
+                  <br />
+                  Your personal information will only be used for membership management.
                 </p>
               </form>
             )}
@@ -190,7 +192,7 @@ export default function Home() {
           {/* 카드 하단 */}
           <div className="px-8 py-4 bg-gray-50 border-t border-gray-100">
             <p className="text-center text-xs text-gray-400">
-              © {new Date().getFullYear()} KATUSA Veterans Association (KVA). All rights reserved.
+              © {new Date().getFullYear()} Korea Defense Veterans Association (KDVA). All rights reserved.
             </p>
           </div>
         </div>
