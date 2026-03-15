@@ -74,7 +74,7 @@ export default function Home() {
           </div>
 
           {/* 메인 타이틀 */}
-          <h1 className="text-white text-2xl font-bold leading-tight mb-2">
+          <h1 className="text-white text-lg font-bold leading-tight mb-2">
             한미동맹에 당신의 한 표를
             <br />
             더하십시오
