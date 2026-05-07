@@ -20,6 +20,7 @@ export function createAdminClient() {
 export type Member = {
   id: number;
   name: string;
+  rank: string | null;
   station: string | null;
   email: string;
   created_at: string;

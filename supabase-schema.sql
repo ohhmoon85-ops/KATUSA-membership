@@ -7,10 +7,14 @@
 CREATE TABLE IF NOT EXISTS members (
   id         BIGSERIAL PRIMARY KEY,
   name       VARCHAR(50)  NOT NULL,
+  rank       VARCHAR(50),
   station    VARCHAR(100),
   email      VARCHAR(200) NOT NULL UNIQUE,
   created_at TIMESTAMPTZ  NOT NULL DEFAULT NOW()
 );
+
+-- 기존 테이블에 rank 컬럼이 없을 경우 추가 (idempotent migration)
+ALTER TABLE members ADD COLUMN IF NOT EXISTS rank VARCHAR(50);
 
 -- 이메일 인덱스 (중복 확인 쿼리 최적화)
 CREATE INDEX IF NOT EXISTS idx_members_email ON members (email);
@@ -33,6 +37,7 @@ CREATE POLICY "Allow public insert"
 -- 테이블 코멘트
 COMMENT ON TABLE members IS 'KVA 카투사 연합회 회원 가입 명단';
 COMMENT ON COLUMN members.name IS '회원 이름 (한글)';
+COMMENT ON COLUMN members.rank IS '군 계급 (선택)';
 COMMENT ON COLUMN members.station IS '복무지역 (선택)';
 COMMENT ON COLUMN members.email IS '이메일 주소 (고유)';
 COMMENT ON COLUMN members.created_at IS '가입 일시 (UTC)';

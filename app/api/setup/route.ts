@@ -23,10 +23,14 @@ export async function GET(req: NextRequest) {
       CREATE TABLE IF NOT EXISTS members (
         id         BIGSERIAL    PRIMARY KEY,
         name       VARCHAR(50)  NOT NULL,
+        rank       VARCHAR(50),
         station    VARCHAR(100),
         email      VARCHAR(200) NOT NULL UNIQUE,
         created_at TIMESTAMPTZ  NOT NULL DEFAULT NOW()
       );
+
+      -- 기존 테이블에 rank 컬럼이 없을 경우 추가
+      ALTER TABLE members ADD COLUMN IF NOT EXISTS rank VARCHAR(50);
 
       -- 인덱스 생성
       CREATE INDEX IF NOT EXISTS idx_members_email      ON members (email);
