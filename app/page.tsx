@@ -5,13 +5,26 @@ import { Star, MapPin, Mail, User, CheckCircle, AlertCircle, Loader2 } from "luc
 
 type FormState = "idle" | "loading" | "success" | "error";
 
+const SERVICE_STATUSES = [
+  { value: "예비역", ko: "예비역", en: "Veteran / Reserve" },
+  { value: "현역", ko: "현역", en: "Active Duty" },
+] as const;
+
+// 복무상태(현역/예비역)를 붙이지 않는 비군인 항목
+const CIVILIAN_RANKS = ["민간인 (Civilian)", "군무원 (Army Civilian Employee)"];
+
 export default function Home() {
-  const [name, setName] = useState("");
+  const [lastName, setLastName] = useState("");
+  const [firstName, setFirstName] = useState("");
+  const [serviceStatus, setServiceStatus] = useState("");
   const [rank, setRank] = useState("");
   const [station, setStation] = useState("");
   const [email, setEmail] = useState("");
   const [formState, setFormState] = useState<FormState>("idle");
   const [errorMsg, setErrorMsg] = useState("");
+
+  const fullName = `${lastName} ${firstName}`.trim();
+  const isCivilian = CIVILIAN_RANKS.includes(rank);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -22,7 +35,7 @@ export default function Home() {
       const res = await fetch("/api/register", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ name, rank, station, email }),
+        body: JSON.stringify({ lastName, firstName, serviceStatus, rank, station, email }),
       });
 
       const data = await res.json();
@@ -39,7 +52,9 @@ export default function Home() {
   };
 
   const handleReset = () => {
-    setName("");
+    setLastName("");
+    setFirstName("");
+    setServiceStatus("");
     setRank("");
     setStation("");
     setEmail("");
@@ -105,10 +120,10 @@ export default function Home() {
                   Registration Complete!
                 </h2>
                 <p className="text-gray-700 text-base mb-1">
-                  <span className="font-semibold text-[#1a3a6b]">{name}</span>님, KDVA 회원이 되신 것을 환영합니다.
+                  <span className="font-semibold text-[#1a3a6b]">{fullName}</span>님, KDVA 회원이 되신 것을 환영합니다.
                 </p>
                 <p className="text-gray-500 text-sm">
-                  Welcome, <span className="font-semibold text-[#1a3a6b]">{name}</span>! You are now a KDVA member.
+                  Welcome, <span className="font-semibold text-[#1a3a6b]">{fullName}</span>! You are now a KDVA member.
                 </p>
               </div>
             ) : (
@@ -117,20 +132,72 @@ export default function Home() {
                 {/* 이름 필드 */}
                 <div>
                   <label className="block text-sm font-semibold text-gray-700 mb-1.5">
-                    이름 (한글) / Name <span className="text-[#c8102e]">*</span>
+                    이름 / Name <span className="text-[#c8102e]">*</span>
+                    <span className="text-gray-400 font-normal text-xs ml-1">(성과 이름 모두 입력 / First &amp; last name required)</span>
                   </label>
-                  <div className="relative">
-                    <User className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
-                    <input
-                      type="text"
-                      value={name}
-                      onChange={(e) => setName(e.target.value)}
-                      placeholder="홍길동"
-                      required
-                      disabled={formState === "loading"}
-                      className="w-full pl-10 pr-4 py-3 border border-gray-200 rounded-xl text-gray-800 placeholder-gray-300 focus:outline-none focus:ring-2 focus:ring-[#1a3a6b]/30 focus:border-[#1a3a6b] transition-all disabled:bg-gray-50 disabled:cursor-not-allowed"
-                    />
+                  <div className="grid grid-cols-2 gap-3">
+                    <div className="relative">
+                      <User className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+                      <input
+                        type="text"
+                        value={lastName}
+                        onChange={(e) => setLastName(e.target.value)}
+                        placeholder="성 / Last"
+                        required
+                        aria-label="성 / Last name"
+                        disabled={formState === "loading"}
+                        className="w-full pl-10 pr-3 py-3 border border-gray-200 rounded-xl text-gray-800 placeholder-gray-300 focus:outline-none focus:ring-2 focus:ring-[#1a3a6b]/30 focus:border-[#1a3a6b] transition-all disabled:bg-gray-50 disabled:cursor-not-allowed"
+                      />
+                    </div>
+                    <div className="relative">
+                      <input
+                        type="text"
+                        value={firstName}
+                        onChange={(e) => setFirstName(e.target.value)}
+                        placeholder="이름 / First"
+                        required
+                        aria-label="이름 / First name"
+                        disabled={formState === "loading"}
+                        className="w-full px-4 py-3 border border-gray-200 rounded-xl text-gray-800 placeholder-gray-300 focus:outline-none focus:ring-2 focus:ring-[#1a3a6b]/30 focus:border-[#1a3a6b] transition-all disabled:bg-gray-50 disabled:cursor-not-allowed"
+                      />
+                    </div>
                   </div>
+                </div>
+
+                {/* 복무상태 필드 */}
+                <div>
+                  <label className="block text-sm font-semibold text-gray-700 mb-1.5">
+                    복무상태 / Service Status
+                    <span className="text-gray-400 font-normal text-xs ml-1">(선택사항 / Optional)</span>
+                  </label>
+                  <div role="radiogroup" aria-label="복무상태 / Service Status" className="grid grid-cols-2 gap-3">
+                    {SERVICE_STATUSES.map((s) => {
+                      const selected = serviceStatus === s.value;
+                      return (
+                        <button
+                          key={s.value}
+                          type="button"
+                          role="radio"
+                          aria-checked={selected}
+                          onClick={() => setServiceStatus(selected ? "" : s.value)}
+                          disabled={formState === "loading" || isCivilian}
+                          className={`px-3 py-2.5 rounded-xl border text-center transition-all focus:outline-none focus:ring-2 focus:ring-[#1a3a6b]/30 disabled:opacity-50 disabled:cursor-not-allowed ${
+                            selected
+                              ? "border-[#1a3a6b] bg-[#1a3a6b]/5 text-[#1a3a6b]"
+                              : "border-gray-200 bg-white text-gray-600 hover:border-gray-300"
+                          }`}
+                        >
+                          <span className="block text-sm font-semibold">{s.ko}</span>
+                          <span className="block text-xs text-gray-400">{s.en}</span>
+                        </button>
+                      );
+                    })}
+                  </div>
+                  {isCivilian && (
+                    <p className="text-xs text-gray-400 mt-1.5">
+                      비군인 항목은 복무상태를 입력하지 않습니다. / Not applicable for non-military members.
+                    </p>
+                  )}
                 </div>
 
                 {/* 계급 필드 */}
@@ -141,7 +208,12 @@ export default function Home() {
                   </label>
                   <select
                     value={rank}
-                    onChange={(e) => setRank(e.target.value)}
+                    onChange={(e) => {
+                      const next = e.target.value;
+                      setRank(next);
+                      // 비군인 선택 시 복무상태는 해당 없음
+                      if (CIVILIAN_RANKS.includes(next)) setServiceStatus("");
+                    }}
                     disabled={formState === "loading"}
                     className="w-full px-4 py-3 border border-gray-200 rounded-xl text-gray-800 focus:outline-none focus:ring-2 focus:ring-[#1a3a6b]/30 focus:border-[#1a3a6b] transition-all disabled:bg-gray-50 disabled:cursor-not-allowed bg-white"
                   >
@@ -158,6 +230,9 @@ export default function Home() {
                       <option value="상사 (Master Sergeant)">상사 / Master Sergeant (MSG)</option>
                       <option value="원사 (Sergeant Major)">원사 / Sergeant Major (SGM)</option>
                     </optgroup>
+                    <optgroup label="준사관 (Warrant Officer)">
+                      <option value="준위 (Warrant Officer)">준위 / Warrant Officer (WO)</option>
+                    </optgroup>
                     <optgroup label="장교 (Officer)">
                       <option value="소위 (2nd Lieutenant)">소위 / 2nd Lieutenant (2LT)</option>
                       <option value="중위 (1st Lieutenant)">중위 / 1st Lieutenant (1LT)</option>
@@ -169,6 +244,10 @@ export default function Home() {
                       <option value="소장 (Major General)">소장 / Major General (MG)</option>
                       <option value="중장 (Lieutenant General)">중장 / Lieutenant General (LTG)</option>
                       <option value="대장 (General)">대장 / General (GEN)</option>
+                    </optgroup>
+                    <optgroup label="비군인 (Non-Military)">
+                      <option value="군무원 (Army Civilian Employee)">군무원 / Army Civilian Employee</option>
+                      <option value="민간인 (Civilian)">민간인 / Civilian</option>
                     </optgroup>
                   </select>
                 </div>
