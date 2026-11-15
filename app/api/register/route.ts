@@ -36,13 +36,9 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    const cleanStation = typeof station === "string" ? station.trim().slice(0, 100) : "";
-    if (!cleanStation) {
-      return NextResponse.json(
-        { error: "Please enter your unit location. / 복무지역을 입력해 주세요." },
-        { status: 400 }
-      );
-    }
+    // 복무지역은 선택사항 (미입력 시 null)
+    const cleanStation =
+      typeof station === "string" && station.trim() ? station.trim().slice(0, 100) : null;
 
     if (!email || typeof email !== "string") {
       return NextResponse.json(

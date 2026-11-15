@@ -88,19 +88,13 @@ export default function Home() {
           </div>
 
           {/* 무료 가입 강조 배지 */}
-          <div className="inline-flex items-center gap-1.5 bg-white/15 backdrop-blur-sm text-white text-xs font-bold px-4 py-1.5 rounded-full mb-4 border border-white/20">
-            <span className="text-yellow-300">✦</span>
-            <span>Free to Join / 무료 가입</span>
-            <span className="text-yellow-300">✦</span>
+          <div>
+            <div className="inline-flex items-center gap-1.5 bg-white/15 backdrop-blur-sm text-white text-xs font-bold px-4 py-1.5 rounded-full border border-white/20">
+              <span className="text-yellow-300">✦</span>
+              <span>Free to Join / 무료 가입</span>
+              <span className="text-yellow-300">✦</span>
+            </div>
           </div>
-
-          {/* 메인 타이틀 */}
-          <h1 className="text-white text-lg font-bold leading-tight mb-2">
-            Add Your Vote to the ROK-US Alliance
-          </h1>
-          <p className="text-blue-300 text-sm font-medium tracking-widest">
-            한미동맹에 당신의 한 표를 더하십시오
-          </p>
         </div>
 
         {/* 폼 카드 */}
@@ -245,7 +239,8 @@ export default function Home() {
                 {/* 복무지역 필드 */}
                 <div>
                   <label htmlFor="station" className="block text-sm font-semibold text-gray-700 mb-1.5">
-                    Unit Location / 복무지역 <Required />
+                    Unit Location / 복무지역
+                    <span className="text-gray-400 font-normal text-xs ml-1">(Optional / 선택사항)</span>
                   </label>
                   <div className="relative">
                     <MapPin className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
@@ -254,8 +249,7 @@ export default function Home() {
                       type="text"
                       value={station}
                       onChange={(e) => setStation(e.target.value)}
-                      placeholder="e.g. Yongsan, Humphreys, Casey / 예: 용산, 평택"
-                      required
+                      placeholder="e.g. Yongsan, Humphreys, Casey"
                       disabled={loading}
                       className={`${inputClass} pl-10 pr-4`}
                     />
