@@ -1,8 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createAdminClient } from "@/lib/supabase";
-
-const SERVICE_STATUSES = ["현역", "예비역"];
-const CIVILIAN_RANK_PREFIXES = ["민간인", "군무원"];
+import { composeRank } from "@/lib/membership";
 
 export async function POST(req: NextRequest) {
   try {
@@ -17,14 +15,38 @@ export async function POST(req: NextRequest) {
 
     if (!cleanLastName || !cleanFirstName) {
       return NextResponse.json(
-        { error: "성과 이름을 모두 입력해 주세요. / Please enter both your first and last name." },
+        { error: "Please enter both your first and last name. / 성과 이름을 모두 입력해 주세요." },
+        { status: 400 }
+      );
+    }
+
+    // 복무상태·계급은 필수. 허용된 조합만 서버에서 조립해 저장한다.
+    if (serviceStatus !== "예비역" && serviceStatus !== "현역") {
+      return NextResponse.json(
+        { error: "Please select your service status. / 복무상태를 선택해 주세요." },
+        { status: 400 }
+      );
+    }
+
+    const cleanRank = composeRank(serviceStatus, rank);
+    if (!cleanRank) {
+      return NextResponse.json(
+        { error: "Please select your rank. / 계급을 선택해 주세요." },
+        { status: 400 }
+      );
+    }
+
+    const cleanStation = typeof station === "string" ? station.trim().slice(0, 100) : "";
+    if (!cleanStation) {
+      return NextResponse.json(
+        { error: "Please enter your unit location. / 복무지역을 입력해 주세요." },
         { status: 400 }
       );
     }
 
     if (!email || typeof email !== "string") {
       return NextResponse.json(
-        { error: "이메일을 입력해 주세요." },
+        { error: "Please enter your email. / 이메일을 입력해 주세요." },
         { status: 400 }
       );
     }
@@ -32,36 +54,12 @@ export async function POST(req: NextRequest) {
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (!emailRegex.test(email)) {
       return NextResponse.json(
-        { error: "올바른 이메일 형식을 입력해 주세요." },
+        { error: "Please enter a valid email address. / 올바른 이메일 형식을 입력해 주세요." },
         { status: 400 }
       );
     }
 
     const cleanName = `${cleanLastName} ${cleanFirstName}`.slice(0, 50);
-    // 계급은 "복무상태 + 계급" 형태로 합쳐 저장한다.
-    // (값은 클라이언트가 보낸 문자열을 그대로 쓰지 않고 서버에서 조립)
-    const rawRank = rank ? String(rank).trim() : "";
-    const cleanStatus = SERVICE_STATUSES.includes(serviceStatus)
-      ? (serviceStatus as string)
-      : null;
-    // 민간인·군무원은 현역/예비역 구분이 없으므로 접두어를 붙이지 않는다.
-    const isCivilianRank = CIVILIAN_RANK_PREFIXES.some((prefix) =>
-      rawRank.startsWith(prefix)
-    );
-
-    let cleanRank: string | null = null;
-    if (rawRank) {
-      if (cleanStatus && !isCivilianRank) {
-        const englishSuffixed =
-          cleanStatus === "예비역" ? rawRank.replace(/\)$/, ", Ret.)") : rawRank;
-        cleanRank = `${cleanStatus} ${englishSuffixed}`.slice(0, 50);
-      } else {
-        cleanRank = rawRank.slice(0, 50);
-      }
-    }
-    const cleanStation = station
-      ? String(station).trim().slice(0, 100)
-      : null;
     const cleanEmail = email.trim().toLowerCase().slice(0, 200);
 
     // ── Supabase 저장 ───────────────────────────────────────────
@@ -76,7 +74,7 @@ export async function POST(req: NextRequest) {
 
     if (existing) {
       return NextResponse.json(
-        { error: "이미 가입된 이메일입니다." },
+        { error: "This email is already registered. / 이미 가입된 이메일입니다." },
         { status: 409 }
       );
     }
@@ -96,19 +94,19 @@ export async function POST(req: NextRequest) {
     if (insertError) {
       console.error("Supabase insert error:", insertError);
       return NextResponse.json(
-        { error: "데이터 저장 중 오류가 발생했습니다. 잠시 후 다시 시도해 주세요." },
+        { error: "Failed to save your registration. Please try again shortly. / 데이터 저장 중 오류가 발생했습니다. 잠시 후 다시 시도해 주세요." },
         { status: 500 }
       );
     }
 
     return NextResponse.json(
-      { message: "가입이 완료되었습니다." },
+      { message: "Registration complete. / 가입이 완료되었습니다." },
       { status: 201 }
     );
   } catch (err) {
     console.error("Register API error:", err);
     return NextResponse.json(
-      { error: "서버 오류가 발생했습니다." },
+      { error: "Server error. / 서버 오류가 발생했습니다." },
       { status: 500 }
     );
   }

@@ -2,32 +2,47 @@
 
 import { useState } from "react";
 import { Star, MapPin, Mail, User, CheckCircle, AlertCircle, Loader2 } from "lucide-react";
+import { SERVICE_STATUSES, rankGroupsFor, type ServiceStatus } from "@/lib/membership";
 
 type FormState = "idle" | "loading" | "success" | "error";
 
-const SERVICE_STATUSES = [
-  { value: "예비역", ko: "예비역", en: "Veteran / Reserve" },
-  { value: "현역", ko: "현역", en: "Active Duty" },
-] as const;
+const inputClass =
+  "w-full py-3 border border-gray-200 rounded-xl text-gray-800 placeholder-gray-300 focus:outline-none focus:ring-2 focus:ring-[#1a3a6b]/30 focus:border-[#1a3a6b] transition-all disabled:bg-gray-50 disabled:cursor-not-allowed";
 
-// 복무상태(현역/예비역)를 붙이지 않는 비군인 항목
-const CIVILIAN_RANKS = ["민간인 (Civilian)", "군무원 (Army Civilian Employee)"];
+function Required() {
+  return <span className="text-[#c8102e]">*</span>;
+}
 
 export default function Home() {
-  const [lastName, setLastName] = useState("");
   const [firstName, setFirstName] = useState("");
-  const [serviceStatus, setServiceStatus] = useState("");
+  const [lastName, setLastName] = useState("");
+  const [serviceStatus, setServiceStatus] = useState<ServiceStatus | "">("");
   const [rank, setRank] = useState("");
   const [station, setStation] = useState("");
   const [email, setEmail] = useState("");
   const [formState, setFormState] = useState<FormState>("idle");
   const [errorMsg, setErrorMsg] = useState("");
 
-  const fullName = `${lastName} ${firstName}`.trim();
-  const isCivilian = CIVILIAN_RANKS.includes(rank);
+  const loading = formState === "loading";
+  const rankGroups = serviceStatus ? rankGroupsFor(serviceStatus) : [];
+
+  const selectStatus = (next: ServiceStatus) => {
+    if (next === serviceStatus) return;
+    setServiceStatus(next);
+    // 복무상태마다 선택 가능한 비군인 항목이 다르므로, 새 목록에 없는 계급이면 초기화
+    const stillValid = rankGroupsFor(next).some((g) => g.ranks.some((r) => r.value === rank));
+    if (!stillValid) setRank("");
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+
+    if (!serviceStatus) {
+      setErrorMsg("Please select your service status. / 복무상태를 선택해 주세요.");
+      setFormState("error");
+      return;
+    }
+
     setFormState("loading");
     setErrorMsg("");
 
@@ -41,25 +56,16 @@ export default function Home() {
       const data = await res.json();
 
       if (!res.ok) {
-        throw new Error(data.error || "가입 처리 중 오류가 발생했습니다.");
+        throw new Error(data.error || "Registration failed. / 가입 처리 중 오류가 발생했습니다.");
       }
 
       setFormState("success");
     } catch (err) {
-      setErrorMsg(err instanceof Error ? err.message : "알 수 없는 오류가 발생했습니다.");
+      setErrorMsg(
+        err instanceof Error ? err.message : "An unknown error occurred. / 알 수 없는 오류가 발생했습니다."
+      );
       setFormState("error");
     }
-  };
-
-  const handleReset = () => {
-    setLastName("");
-    setFirstName("");
-    setServiceStatus("");
-    setRank("");
-    setStation("");
-    setEmail("");
-    setFormState("idle");
-    setErrorMsg("");
   };
 
   return (
@@ -74,28 +80,26 @@ export default function Home() {
       <div className="relative w-full max-w-md">
         {/* 상단 헤더 영역 */}
         <div className="text-center mb-8">
-          {/* KVA 배지 */}
+          {/* KDVA 배지 */}
           <div className="inline-flex items-center gap-2 bg-[#c8102e] text-white text-sm font-bold px-5 py-2 rounded-full mb-6 shadow-lg shadow-red-900/30">
             <Star className="w-4 h-4 fill-white" />
-            <span>주한미군전우회 회원 가입 / KDVA Membership</span>
+            <span>KDVA Membership / 주한미군전우회 회원 가입</span>
             <Star className="w-4 h-4 fill-white" />
           </div>
 
           {/* 무료 가입 강조 배지 */}
           <div className="inline-flex items-center gap-1.5 bg-white/15 backdrop-blur-sm text-white text-xs font-bold px-4 py-1.5 rounded-full mb-4 border border-white/20">
             <span className="text-yellow-300">✦</span>
-            <span>무료 가입 / Free to Join</span>
+            <span>Free to Join / 무료 가입</span>
             <span className="text-yellow-300">✦</span>
           </div>
 
           {/* 메인 타이틀 */}
           <h1 className="text-white text-lg font-bold leading-tight mb-2">
-            한미동맹에 당신의 한 표를
-            <br />
-            더하십시오
+            Add Your Vote to the ROK-US Alliance
           </h1>
           <p className="text-blue-300 text-sm font-medium tracking-widest">
-            Add Your Vote to the ROK-US Alliance
+            한미동맹에 당신의 한 표를 더하십시오
           </p>
         </div>
 
@@ -113,17 +117,18 @@ export default function Home() {
                     <CheckCircle className="w-10 h-10 text-green-500" />
                   </div>
                 </div>
-                <h2 className="text-xl font-bold text-gray-800 mb-1">
-                  가입이 완료되었습니다!
-                </h2>
-                <h2 className="text-sm font-semibold text-gray-500 mb-3">
-                  Registration Complete!
-                </h2>
+                <h2 className="text-xl font-bold text-gray-800 mb-1">Registration Complete!</h2>
+                <h2 className="text-sm font-semibold text-gray-500 mb-3">가입이 완료되었습니다!</h2>
                 <p className="text-gray-700 text-base mb-1">
-                  <span className="font-semibold text-[#1a3a6b]">{fullName}</span>님, KDVA 회원이 되신 것을 환영합니다.
+                  Welcome,{" "}
+                  <span className="font-semibold text-[#1a3a6b]">
+                    {`${firstName} ${lastName}`.trim()}
+                  </span>
+                  ! You are now a KDVA member.
                 </p>
                 <p className="text-gray-500 text-sm">
-                  Welcome, <span className="font-semibold text-[#1a3a6b]">{fullName}</span>! You are now a KDVA member.
+                  <span className="font-semibold text-[#1a3a6b]">{`${lastName} ${firstName}`.trim()}</span>
+                  님, KDVA 회원이 되신 것을 환영합니다.
                 </p>
               </div>
             ) : (
@@ -132,45 +137,51 @@ export default function Home() {
                 {/* 이름 필드 */}
                 <div>
                   <label className="block text-sm font-semibold text-gray-700 mb-1.5">
-                    이름 / Name <span className="text-[#c8102e]">*</span>
-                    <span className="text-gray-400 font-normal text-xs ml-1">(성과 이름 모두 입력 / First &amp; last name required)</span>
+                    Name / 이름 <Required />
+                    <span className="text-gray-400 font-normal text-xs ml-1">
+                      (First &amp; last name required / 성과 이름 모두 입력)
+                    </span>
                   </label>
                   <div className="grid grid-cols-2 gap-3">
                     <div className="relative">
                       <User className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
                       <input
                         type="text"
-                        value={lastName}
-                        onChange={(e) => setLastName(e.target.value)}
-                        placeholder="성 / Last"
-                        required
-                        aria-label="성 / Last name"
-                        disabled={formState === "loading"}
-                        className="w-full pl-10 pr-3 py-3 border border-gray-200 rounded-xl text-gray-800 placeholder-gray-300 focus:outline-none focus:ring-2 focus:ring-[#1a3a6b]/30 focus:border-[#1a3a6b] transition-all disabled:bg-gray-50 disabled:cursor-not-allowed"
-                      />
-                    </div>
-                    <div className="relative">
-                      <input
-                        type="text"
                         value={firstName}
                         onChange={(e) => setFirstName(e.target.value)}
-                        placeholder="이름 / First"
+                        placeholder="First / 이름"
                         required
-                        aria-label="이름 / First name"
-                        disabled={formState === "loading"}
-                        className="w-full px-4 py-3 border border-gray-200 rounded-xl text-gray-800 placeholder-gray-300 focus:outline-none focus:ring-2 focus:ring-[#1a3a6b]/30 focus:border-[#1a3a6b] transition-all disabled:bg-gray-50 disabled:cursor-not-allowed"
+                        autoComplete="given-name"
+                        aria-label="First name / 이름"
+                        disabled={loading}
+                        className={`${inputClass} pl-10 pr-3`}
                       />
                     </div>
+                    <input
+                      type="text"
+                      value={lastName}
+                      onChange={(e) => setLastName(e.target.value)}
+                      placeholder="Last / 성"
+                      required
+                      autoComplete="family-name"
+                      aria-label="Last name / 성"
+                      disabled={loading}
+                      className={`${inputClass} px-4`}
+                    />
                   </div>
                 </div>
 
                 {/* 복무상태 필드 */}
                 <div>
                   <label className="block text-sm font-semibold text-gray-700 mb-1.5">
-                    복무상태 / Service Status
-                    <span className="text-gray-400 font-normal text-xs ml-1">(선택사항 / Optional)</span>
+                    Service Status / 복무상태 <Required />
                   </label>
-                  <div role="radiogroup" aria-label="복무상태 / Service Status" className="grid grid-cols-2 gap-3">
+                  <div
+                    role="radiogroup"
+                    aria-label="Service Status / 복무상태"
+                    aria-required="true"
+                    className="grid grid-cols-2 gap-3"
+                  >
                     {SERVICE_STATUSES.map((s) => {
                       const selected = serviceStatus === s.value;
                       return (
@@ -179,113 +190,95 @@ export default function Home() {
                           type="button"
                           role="radio"
                           aria-checked={selected}
-                          onClick={() => setServiceStatus(selected ? "" : s.value)}
-                          disabled={formState === "loading" || isCivilian}
+                          onClick={() => selectStatus(s.value)}
+                          disabled={loading}
                           className={`px-3 py-2.5 rounded-xl border text-center transition-all focus:outline-none focus:ring-2 focus:ring-[#1a3a6b]/30 disabled:opacity-50 disabled:cursor-not-allowed ${
                             selected
                               ? "border-[#1a3a6b] bg-[#1a3a6b]/5 text-[#1a3a6b]"
                               : "border-gray-200 bg-white text-gray-600 hover:border-gray-300"
                           }`}
                         >
-                          <span className="block text-sm font-semibold">{s.ko}</span>
-                          <span className="block text-xs text-gray-400">{s.en}</span>
+                          <span className="block text-sm font-semibold">{s.en}</span>
+                          <span className="block text-xs text-gray-400">{s.ko}</span>
                         </button>
                       );
                     })}
                   </div>
-                  {isCivilian && (
-                    <p className="text-xs text-gray-400 mt-1.5">
-                      비군인 항목은 복무상태를 입력하지 않습니다. / Not applicable for non-military members.
-                    </p>
-                  )}
                 </div>
 
                 {/* 계급 필드 */}
                 <div>
-                  <label className="block text-sm font-semibold text-gray-700 mb-1.5">
-                    계급 / Rank
-                    <span className="text-gray-400 font-normal text-xs ml-1">(선택사항 / Optional)</span>
+                  <label htmlFor="rank" className="block text-sm font-semibold text-gray-700 mb-1.5">
+                    Rank / 계급 <Required />
                   </label>
                   <select
+                    id="rank"
                     value={rank}
-                    onChange={(e) => {
-                      const next = e.target.value;
-                      setRank(next);
-                      // 비군인 선택 시 복무상태는 해당 없음
-                      if (CIVILIAN_RANKS.includes(next)) setServiceStatus("");
-                    }}
-                    disabled={formState === "loading"}
-                    className="w-full px-4 py-3 border border-gray-200 rounded-xl text-gray-800 focus:outline-none focus:ring-2 focus:ring-[#1a3a6b]/30 focus:border-[#1a3a6b] transition-all disabled:bg-gray-50 disabled:cursor-not-allowed bg-white"
+                    onChange={(e) => setRank(e.target.value)}
+                    required
+                    disabled={loading || !serviceStatus}
+                    className={`${inputClass} px-4 bg-white`}
                   >
-                    <option value="">-- 계급 선택 / Select Rank --</option>
-                    <optgroup label="병 (Enlisted)">
-                      <option value="이병 (Private)">이병 / Private (PVT)</option>
-                      <option value="일병 (PFC)">일병 / Private First Class (PFC)</option>
-                      <option value="상병 (Corporal)">상병 / Corporal (CPL)</option>
-                      <option value="병장 (Sergeant)">병장 / Sergeant (SGT)</option>
-                    </optgroup>
-                    <optgroup label="부사관 (NCO)">
-                      <option value="하사 (Staff Sergeant)">하사 / Staff Sergeant (SSG)</option>
-                      <option value="중사 (Sergeant First Class)">중사 / Sergeant First Class (SFC)</option>
-                      <option value="상사 (Master Sergeant)">상사 / Master Sergeant (MSG)</option>
-                      <option value="원사 (Sergeant Major)">원사 / Sergeant Major (SGM)</option>
-                    </optgroup>
-                    <optgroup label="준사관 (Warrant Officer)">
-                      <option value="준위 (Warrant Officer)">준위 / Warrant Officer (WO)</option>
-                    </optgroup>
-                    <optgroup label="장교 (Officer)">
-                      <option value="소위 (2nd Lieutenant)">소위 / 2nd Lieutenant (2LT)</option>
-                      <option value="중위 (1st Lieutenant)">중위 / 1st Lieutenant (1LT)</option>
-                      <option value="대위 (Captain)">대위 / Captain (CPT)</option>
-                      <option value="소령 (Major)">소령 / Major (MAJ)</option>
-                      <option value="중령 (Lieutenant Colonel)">중령 / Lieutenant Colonel (LTC)</option>
-                      <option value="대령 (Colonel)">대령 / Colonel (COL)</option>
-                      <option value="준장 (Brigadier General)">준장 / Brigadier General (BG)</option>
-                      <option value="소장 (Major General)">소장 / Major General (MG)</option>
-                      <option value="중장 (Lieutenant General)">중장 / Lieutenant General (LTG)</option>
-                      <option value="대장 (General)">대장 / General (GEN)</option>
-                    </optgroup>
-                    <optgroup label="비군인 (Non-Military)">
-                      <option value="군무원 (Army Civilian Employee)">군무원 / Army Civilian Employee</option>
-                      <option value="민간인 (Civilian)">민간인 / Civilian</option>
-                    </optgroup>
+                    <option value="">
+                      {serviceStatus
+                        ? "-- Select Rank / 계급 선택 --"
+                        : "-- Select service status first / 복무상태를 먼저 선택 --"}
+                    </option>
+                    {rankGroups.map((g) => (
+                      <optgroup key={g.en} label={`${g.en} (${g.ko})`}>
+                        {g.ranks.map((r) => (
+                          <option key={r.value} value={r.value}>
+                            {r.en} / {r.ko}
+                          </option>
+                        ))}
+                      </optgroup>
+                    ))}
                   </select>
+                  {serviceStatus === "예비역" && (
+                    <p className="text-xs text-gray-400 mt-1.5">
+                      Veterans may choose &quot;Civilian (Civ)&quot; instead of a rank. / 예비역은 계급 대신
+                      &quot;민간인(Civ)&quot;을 선택할 수 있습니다.
+                    </p>
+                  )}
                 </div>
 
                 {/* 복무지역 필드 */}
                 <div>
-                  <label className="block text-sm font-semibold text-gray-700 mb-1.5">
-                    복무지역 / Unit Location
-                    <span className="text-gray-400 font-normal text-xs ml-1">(선택사항 / Optional)</span>
+                  <label htmlFor="station" className="block text-sm font-semibold text-gray-700 mb-1.5">
+                    Unit Location / 복무지역 <Required />
                   </label>
                   <div className="relative">
                     <MapPin className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
                     <input
+                      id="station"
                       type="text"
                       value={station}
                       onChange={(e) => setStation(e.target.value)}
-                      placeholder="예: 용산, 평택, 의정부 등"
-                      disabled={formState === "loading"}
-                      className="w-full pl-10 pr-4 py-3 border border-gray-200 rounded-xl text-gray-800 placeholder-gray-300 focus:outline-none focus:ring-2 focus:ring-[#1a3a6b]/30 focus:border-[#1a3a6b] transition-all disabled:bg-gray-50 disabled:cursor-not-allowed"
+                      placeholder="e.g. Yongsan, Humphreys, Casey / 예: 용산, 평택"
+                      required
+                      disabled={loading}
+                      className={`${inputClass} pl-10 pr-4`}
                     />
                   </div>
                 </div>
 
                 {/* 이메일 필드 */}
                 <div>
-                  <label className="block text-sm font-semibold text-gray-700 mb-1.5">
-                    이메일 (Email) <span className="text-[#c8102e]">*</span>
+                  <label htmlFor="email" className="block text-sm font-semibold text-gray-700 mb-1.5">
+                    Email / 이메일 <Required />
                   </label>
                   <div className="relative">
                     <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
                     <input
+                      id="email"
                       type="email"
                       value={email}
                       onChange={(e) => setEmail(e.target.value)}
                       placeholder="your.email@example.com"
                       required
-                      disabled={formState === "loading"}
-                      className="w-full pl-10 pr-4 py-3 border border-gray-200 rounded-xl text-gray-800 placeholder-gray-300 focus:outline-none focus:ring-2 focus:ring-[#1a3a6b]/30 focus:border-[#1a3a6b] transition-all disabled:bg-gray-50 disabled:cursor-not-allowed"
+                      autoComplete="email"
+                      disabled={loading}
+                      className={`${inputClass} pl-10 pr-4`}
                     />
                   </div>
                 </div>
@@ -301,23 +294,23 @@ export default function Home() {
                 {/* 제출 버튼 */}
                 <button
                   type="submit"
-                  disabled={formState === "loading"}
+                  disabled={loading}
                   className="w-full bg-[#c8102e] hover:bg-[#a00d24] active:bg-[#8a0b1e] text-white font-bold py-3.5 rounded-xl transition-all duration-200 shadow-lg shadow-red-900/20 hover:shadow-red-900/30 disabled:opacity-60 disabled:cursor-not-allowed flex items-center justify-center gap-2 mt-2"
                 >
-                  {formState === "loading" ? (
+                  {loading ? (
                     <>
                       <Loader2 className="w-5 h-5 animate-spin" />
-                      <span>처리 중...</span>
+                      <span>Processing... / 처리 중...</span>
                     </>
                   ) : (
-                    <span>가입하기 (Join Now)</span>
+                    <span>Join Now (가입하기)</span>
                   )}
                 </button>
 
                 <p className="text-center text-xs text-gray-400 pt-1">
-                  가입 시 개인정보는 회원 관리 목적으로만 사용됩니다.
-                  <br />
                   Your personal information will only be used for membership management.
+                  <br />
+                  가입 시 개인정보는 회원 관리 목적으로만 사용됩니다.
                 </p>
               </form>
             )}
