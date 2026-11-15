@@ -1,16 +1,8 @@
 "use client";
 
 import { useState } from "react";
-import { Star, MapPin, Mail, User, Globe, CheckCircle, AlertCircle, Loader2 } from "lucide-react";
-import {
-  COUNTRIES,
-  SERVICE_STATUSES,
-  US_STATES,
-  rankGroupsFor,
-  usStateLabel,
-  type CountryCode,
-  type ServiceStatus,
-} from "@/lib/membership";
+import { Star, MapPin, Mail, User, CheckCircle, AlertCircle, Loader2 } from "lucide-react";
+import { SERVICE_STATUSES, rankGroupsFor, type ServiceStatus } from "@/lib/membership";
 
 type FormState = "idle" | "loading" | "success" | "error";
 
@@ -22,9 +14,6 @@ function Required() {
 }
 
 export default function Home() {
-  const [countryCode, setCountryCode] = useState<CountryCode | "">("");
-  const [usState, setUsState] = useState("");
-  const [otherCountry, setOtherCountry] = useState("");
   const [firstName, setFirstName] = useState("");
   const [lastName, setLastName] = useState("");
   const [serviceStatus, setServiceStatus] = useState<ServiceStatus | "">("");
@@ -65,9 +54,6 @@ export default function Home() {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          countryCode,
-          state: usState,
-          otherCountry,
           lastName,
           firstName,
           serviceStatus,
@@ -152,70 +138,6 @@ export default function Home() {
             ) : (
               /* 폼 상태 */
               <form onSubmit={handleSubmit} className="space-y-5">
-                {/* 거주지 필드 */}
-                <div>
-                  <label htmlFor="country" className="block text-sm font-semibold text-gray-700 mb-1.5">
-                    Current Residence / 현재 거주지 <Required />
-                  </label>
-                  <div className="relative">
-                    <Globe className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none" />
-                    <select
-                      id="country"
-                      value={countryCode}
-                      onChange={(e) => {
-                        setCountryCode(e.target.value as CountryCode | "");
-                        setUsState("");
-                        setOtherCountry("");
-                      }}
-                      required
-                      autoComplete="country-name"
-                      disabled={loading}
-                      className={`${inputClass} pl-10 pr-4 bg-white`}
-                    >
-                      <option value="">Select Country / 국가 선택</option>
-                      {COUNTRIES.map((c) => (
-                        <option key={c.code} value={c.code}>
-                          {c.en} / {c.ko}
-                        </option>
-                      ))}
-                    </select>
-                  </div>
-
-                  {countryCode === "US" && (
-                    <select
-                      aria-label="State / 주"
-                      value={usState}
-                      onChange={(e) => setUsState(e.target.value)}
-                      required
-                      autoComplete="address-level1"
-                      disabled={loading}
-                      className={`${inputClass} px-4 bg-white mt-3`}
-                    >
-                      <option value="">Select State / 주 선택</option>
-                      {US_STATES.map((st) => (
-                        <option key={st.abbr} value={usStateLabel(st)}>
-                          {usStateLabel(st)}
-                        </option>
-                      ))}
-                    </select>
-                  )}
-
-                  {countryCode === "OTHER" && (
-                    <input
-                      type="text"
-                      aria-label="Country / 국가명"
-                      value={otherCountry}
-                      onChange={(e) => setOtherCountry(e.target.value)}
-                      placeholder="Country name / 국가명"
-                      required
-                      maxLength={50}
-                      autoComplete="country-name"
-                      disabled={loading}
-                      className={`${inputClass} px-4 mt-3`}
-                    />
-                  )}
-                </div>
-
                 {/* 이름 필드 */}
                 <div>
                   <label className="block text-sm font-semibold text-gray-700 mb-1.5">

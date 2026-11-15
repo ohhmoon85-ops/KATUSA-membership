@@ -1,14 +1,11 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createAdminClient } from "@/lib/supabase";
-import { composeRank, composeResidence, isServiceStatus } from "@/lib/membership";
+import { composeRank, isServiceStatus } from "@/lib/membership";
 
 export async function POST(req: NextRequest) {
   try {
     const body = await req.json();
     const {
-      countryCode,
-      state,
-      otherCountry,
       lastName,
       firstName,
       serviceStatus,
@@ -18,11 +15,6 @@ export async function POST(req: NextRequest) {
     } = body;
 
     // ── 입력 검증 ──────────────────────────────────────────────
-    const residence = composeResidence(countryCode, state, otherCountry);
-    if ("error" in residence) {
-      return NextResponse.json({ error: residence.error }, { status: 400 });
-    }
-
     const cleanLastName =
       typeof lastName === "string" ? lastName.trim() : "";
     const cleanFirstName =
@@ -97,8 +89,6 @@ export async function POST(req: NextRequest) {
       .from("members")
       .insert([
         {
-          country: residence.country,
-          state: residence.state,
           name: cleanName,
           rank: cleanRank,
           station: cleanStation,
