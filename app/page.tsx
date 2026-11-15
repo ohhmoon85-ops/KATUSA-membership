@@ -69,7 +69,7 @@ export default function Home() {
   };
 
   return (
-    <main className="min-h-screen bg-gradient-kva flex flex-col items-center justify-center p-4 py-12">
+    <main className="relative min-h-screen overflow-x-hidden bg-gradient-kva flex flex-col items-center justify-center px-4 py-8 sm:py-12">
       {/* 배경 장식 */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
         <div className="absolute top-20 left-10 w-64 h-64 bg-blue-500/5 rounded-full blur-3xl" />
@@ -79,12 +79,12 @@ export default function Home() {
       {/* 메인 컨테이너 */}
       <div className="relative w-full max-w-md">
         {/* 상단 헤더 영역 */}
-        <div className="text-center mb-8">
+        <div className="text-center mb-6 sm:mb-8">
           {/* KDVA 배지 */}
-          <div className="inline-flex items-center gap-2 bg-[#c8102e] text-white text-sm font-bold px-5 py-2 rounded-full mb-6 shadow-lg shadow-red-900/30">
-            <Star className="w-4 h-4 fill-white" />
+          <div className="inline-flex items-center gap-1.5 sm:gap-2 bg-[#c8102e] text-white text-xs sm:text-sm font-bold px-4 sm:px-5 py-2 rounded-full mb-4 sm:mb-6 shadow-lg shadow-red-900/30">
+            <Star className="w-3.5 h-3.5 sm:w-4 sm:h-4 shrink-0 fill-white" />
             <span>KDVA Membership / 주한미군전우회 회원 가입</span>
-            <Star className="w-4 h-4 fill-white" />
+            <Star className="w-3.5 h-3.5 sm:w-4 sm:h-4 shrink-0 fill-white" />
           </div>
 
           {/* 무료 가입 강조 배지 */}
@@ -102,7 +102,7 @@ export default function Home() {
           {/* 카드 상단 컬러 바 */}
           <div className="h-1.5 bg-gradient-to-r from-[#c8102e] via-[#1a3a6b] to-[#c8102e]" />
 
-          <div className="p-8">
+          <div className="p-5 sm:p-8">
             {formState === "success" ? (
               /* 성공 상태 */
               <div className="text-center py-6">
@@ -136,7 +136,7 @@ export default function Home() {
                       (First &amp; last name required / 성과 이름 모두 입력)
                     </span>
                   </label>
-                  <div className="grid grid-cols-2 gap-3">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                     <div className="relative">
                       <User className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
                       <input
@@ -215,8 +215,8 @@ export default function Home() {
                   >
                     <option value="">
                       {serviceStatus
-                        ? "-- Select Rank / 계급 선택 --"
-                        : "-- Select service status first / 복무상태를 먼저 선택 --"}
+                        ? "Select Rank / 계급 선택"
+                        : "Select status first / 복무상태 먼저 선택"}
                     </option>
                     {rankGroups.map((g) => (
                       <optgroup key={g.en} label={`${g.en} (${g.ko})`}>
@@ -311,7 +311,7 @@ export default function Home() {
           </div>
 
           {/* 카드 하단 */}
-          <div className="px-8 py-4 bg-gray-50 border-t border-gray-100">
+          <div className="px-5 sm:px-8 py-4 bg-gray-50 border-t border-gray-100">
             <p className="text-center text-xs text-gray-400">
               © {new Date().getFullYear()} Korea Defense Veterans Association (KDVA). All rights reserved.
             </p>
