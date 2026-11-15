@@ -51,7 +51,7 @@ export async function GET(req: NextRequest) {
     // ── Supabase에서 지난주 가입 회원 전체 조회 ──────────────────
     const { data: members, error: fetchError } = await supabaseAdmin
       .from("members")
-      .select("id, name, rank, station, email, created_at")
+      .select("id, name, country, state, rank, station, email, created_at")
       .gte("created_at", lastMonday.toISOString())
       .lte("created_at", lastSunday.toISOString())
       .order("created_at", { ascending: true });
@@ -69,11 +69,13 @@ export async function GET(req: NextRequest) {
     // ── 엑셀 파일 생성 ──────────────────────────────────────────
     const worksheetData = [
       // 헤더 행
-      ["No", "이름", "계급", "복무지역", "이메일", "가입 일시"],
+      ["No", "이름", "거주 국가", "거주 주(State)", "계급", "복무지역", "이메일", "가입 일시"],
       // 데이터 행
       ...(members ?? []).map((m, idx) => [
         idx + 1,
         m.name,
+        m.country ?? "미입력",
+        m.state ?? "-",
         m.rank ?? "미입력",
         m.station ?? "미입력",
         m.email,
@@ -90,6 +92,8 @@ export async function GET(req: NextRequest) {
     worksheet["!cols"] = [
       { wch: 6 },   // No
       { wch: 12 },  // 이름
+      { wch: 12 },  // 거주 국가
+      { wch: 20 },  // 거주 주
       { wch: 20 },  // 계급
       { wch: 14 },  // 복무지역
       { wch: 30 },  // 이메일

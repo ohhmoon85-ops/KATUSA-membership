@@ -16,6 +16,10 @@ CREATE TABLE IF NOT EXISTS members (
 -- 기존 테이블에 rank 컬럼이 없을 경우 추가 (idempotent migration)
 ALTER TABLE members ADD COLUMN IF NOT EXISTS rank VARCHAR(50);
 
+-- 거주지 컬럼 추가 (idempotent migration)
+ALTER TABLE members ADD COLUMN IF NOT EXISTS country VARCHAR(50);
+ALTER TABLE members ADD COLUMN IF NOT EXISTS state   VARCHAR(50);
+
 -- 이메일 인덱스 (중복 확인 쿼리 최적화)
 CREATE INDEX IF NOT EXISTS idx_members_email ON members (email);
 
@@ -39,5 +43,7 @@ COMMENT ON TABLE members IS 'KVA 카투사 연합회 회원 가입 명단';
 COMMENT ON COLUMN members.name IS '회원 이름 (한글)';
 COMMENT ON COLUMN members.rank IS '군 계급 (선택)';
 COMMENT ON COLUMN members.station IS '복무지역 (선택)';
+COMMENT ON COLUMN members.country IS '현재 거주 국가 (미국/대한민국/기타 국가명)';
+COMMENT ON COLUMN members.state IS '미국 거주 시 주 (예: California (CA))';
 COMMENT ON COLUMN members.email IS '이메일 주소 (고유)';
 COMMENT ON COLUMN members.created_at IS '가입 일시 (UTC)';

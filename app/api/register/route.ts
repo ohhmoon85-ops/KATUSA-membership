@@ -1,13 +1,28 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createAdminClient } from "@/lib/supabase";
-import { composeRank } from "@/lib/membership";
+import { composeRank, composeResidence, isServiceStatus } from "@/lib/membership";
 
 export async function POST(req: NextRequest) {
   try {
     const body = await req.json();
-    const { lastName, firstName, serviceStatus, rank, station, email } = body;
+    const {
+      countryCode,
+      state,
+      otherCountry,
+      lastName,
+      firstName,
+      serviceStatus,
+      rank,
+      station,
+      email,
+    } = body;
 
     // ── 입력 검증 ──────────────────────────────────────────────
+    const residence = composeResidence(countryCode, state, otherCountry);
+    if ("error" in residence) {
+      return NextResponse.json({ error: residence.error }, { status: 400 });
+    }
+
     const cleanLastName =
       typeof lastName === "string" ? lastName.trim() : "";
     const cleanFirstName =
@@ -21,7 +36,7 @@ export async function POST(req: NextRequest) {
     }
 
     // 복무상태·계급은 필수. 허용된 조합만 서버에서 조립해 저장한다.
-    if (serviceStatus !== "예비역" && serviceStatus !== "현역") {
+    if (!isServiceStatus(serviceStatus)) {
       return NextResponse.json(
         { error: "Please select your service status. / 복무상태를 선택해 주세요." },
         { status: 400 }
@@ -36,9 +51,11 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    // 복무지역은 선택사항 (미입력 시 null)
+    // 복무지역은 선택사항 (미입력 시 null). 군 미복무 민간인은 해당 없음
     const cleanStation =
-      typeof station === "string" && station.trim() ? station.trim().slice(0, 100) : null;
+      serviceStatus !== "민간인" && typeof station === "string" && station.trim()
+        ? station.trim().slice(0, 100)
+        : null;
 
     if (!email || typeof email !== "string") {
       return NextResponse.json(
@@ -80,6 +97,8 @@ export async function POST(req: NextRequest) {
       .from("members")
       .insert([
         {
+          country: residence.country,
+          state: residence.state,
           name: cleanName,
           rank: cleanRank,
           station: cleanStation,

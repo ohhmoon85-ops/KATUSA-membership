@@ -32,6 +32,10 @@ export async function GET(req: NextRequest) {
       -- 기존 테이블에 rank 컬럼이 없을 경우 추가
       ALTER TABLE members ADD COLUMN IF NOT EXISTS rank VARCHAR(50);
 
+      -- 거주지 컬럼 추가
+      ALTER TABLE members ADD COLUMN IF NOT EXISTS country VARCHAR(50);
+      ALTER TABLE members ADD COLUMN IF NOT EXISTS state   VARCHAR(50);
+
       -- 인덱스 생성
       CREATE INDEX IF NOT EXISTS idx_members_email      ON members (email);
       CREATE INDEX IF NOT EXISTS idx_members_created_at ON members (created_at);

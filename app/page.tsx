@@ -1,8 +1,16 @@
 "use client";
 
 import { useState } from "react";
-import { Star, MapPin, Mail, User, CheckCircle, AlertCircle, Loader2 } from "lucide-react";
-import { SERVICE_STATUSES, rankGroupsFor, type ServiceStatus } from "@/lib/membership";
+import { Star, MapPin, Mail, User, Globe, CheckCircle, AlertCircle, Loader2 } from "lucide-react";
+import {
+  COUNTRIES,
+  SERVICE_STATUSES,
+  US_STATES,
+  rankGroupsFor,
+  usStateLabel,
+  type CountryCode,
+  type ServiceStatus,
+} from "@/lib/membership";
 
 type FormState = "idle" | "loading" | "success" | "error";
 
@@ -14,6 +22,9 @@ function Required() {
 }
 
 export default function Home() {
+  const [countryCode, setCountryCode] = useState<CountryCode | "">("");
+  const [usState, setUsState] = useState("");
+  const [otherCountry, setOtherCountry] = useState("");
   const [firstName, setFirstName] = useState("");
   const [lastName, setLastName] = useState("");
   const [serviceStatus, setServiceStatus] = useState<ServiceStatus | "">("");
@@ -25,6 +36,8 @@ export default function Home() {
 
   const loading = formState === "loading";
   const rankGroups = serviceStatus ? rankGroupsFor(serviceStatus) : [];
+  // 군 복무 경험이 없는 민간인은 계급·복무지역 입력 없음
+  const isCivilian = serviceStatus === "민간인";
 
   const selectStatus = (next: ServiceStatus) => {
     if (next === serviceStatus) return;
@@ -32,6 +45,7 @@ export default function Home() {
     // 복무상태마다 선택 가능한 비군인 항목이 다르므로, 새 목록에 없는 계급이면 초기화
     const stillValid = rankGroupsFor(next).some((g) => g.ranks.some((r) => r.value === rank));
     if (!stillValid) setRank("");
+    if (next === "민간인") setStation("");
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -50,7 +64,17 @@ export default function Home() {
       const res = await fetch("/api/register", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ lastName, firstName, serviceStatus, rank, station, email }),
+        body: JSON.stringify({
+          countryCode,
+          state: usState,
+          otherCountry,
+          lastName,
+          firstName,
+          serviceStatus,
+          rank,
+          station,
+          email,
+        }),
       });
 
       const data = await res.json();
@@ -128,6 +152,70 @@ export default function Home() {
             ) : (
               /* 폼 상태 */
               <form onSubmit={handleSubmit} className="space-y-5">
+                {/* 거주지 필드 */}
+                <div>
+                  <label htmlFor="country" className="block text-sm font-semibold text-gray-700 mb-1.5">
+                    Current Residence / 현재 거주지 <Required />
+                  </label>
+                  <div className="relative">
+                    <Globe className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none" />
+                    <select
+                      id="country"
+                      value={countryCode}
+                      onChange={(e) => {
+                        setCountryCode(e.target.value as CountryCode | "");
+                        setUsState("");
+                        setOtherCountry("");
+                      }}
+                      required
+                      autoComplete="country-name"
+                      disabled={loading}
+                      className={`${inputClass} pl-10 pr-4 bg-white`}
+                    >
+                      <option value="">Select Country / 국가 선택</option>
+                      {COUNTRIES.map((c) => (
+                        <option key={c.code} value={c.code}>
+                          {c.en} / {c.ko}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+
+                  {countryCode === "US" && (
+                    <select
+                      aria-label="State / 주"
+                      value={usState}
+                      onChange={(e) => setUsState(e.target.value)}
+                      required
+                      autoComplete="address-level1"
+                      disabled={loading}
+                      className={`${inputClass} px-4 bg-white mt-3`}
+                    >
+                      <option value="">Select State / 주 선택</option>
+                      {US_STATES.map((st) => (
+                        <option key={st.abbr} value={usStateLabel(st)}>
+                          {usStateLabel(st)}
+                        </option>
+                      ))}
+                    </select>
+                  )}
+
+                  {countryCode === "OTHER" && (
+                    <input
+                      type="text"
+                      aria-label="Country / 국가명"
+                      value={otherCountry}
+                      onChange={(e) => setOtherCountry(e.target.value)}
+                      placeholder="Country name / 국가명"
+                      required
+                      maxLength={50}
+                      autoComplete="country-name"
+                      disabled={loading}
+                      className={`${inputClass} px-4 mt-3`}
+                    />
+                  )}
+                </div>
+
                 {/* 이름 필드 */}
                 <div>
                   <label className="block text-sm font-semibold text-gray-700 mb-1.5">
@@ -174,7 +262,7 @@ export default function Home() {
                     role="radiogroup"
                     aria-label="Service Status / 복무상태"
                     aria-required="true"
-                    className="grid grid-cols-2 gap-3"
+                    className="grid grid-cols-3 gap-2 sm:gap-3"
                   >
                     {SERVICE_STATUSES.map((s) => {
                       const selected = serviceStatus === s.value;
@@ -186,13 +274,13 @@ export default function Home() {
                           aria-checked={selected}
                           onClick={() => selectStatus(s.value)}
                           disabled={loading}
-                          className={`px-3 py-2.5 rounded-xl border text-center transition-all focus:outline-none focus:ring-2 focus:ring-[#1a3a6b]/30 disabled:opacity-50 disabled:cursor-not-allowed ${
+                          className={`px-1.5 sm:px-3 py-2.5 rounded-xl border text-center transition-all focus:outline-none focus:ring-2 focus:ring-[#1a3a6b]/30 disabled:opacity-50 disabled:cursor-not-allowed ${
                             selected
                               ? "border-[#1a3a6b] bg-[#1a3a6b]/5 text-[#1a3a6b]"
                               : "border-gray-200 bg-white text-gray-600 hover:border-gray-300"
                           }`}
                         >
-                          <span className="block text-sm font-semibold">{s.en}</span>
+                          <span className="block text-xs sm:text-sm font-semibold leading-tight">{s.en}</span>
                           <span className="block text-xs text-gray-400">{s.ko}</span>
                         </button>
                       );
@@ -200,7 +288,14 @@ export default function Home() {
                   </div>
                 </div>
 
-                {/* 계급 필드 */}
+                {isCivilian && (
+                  <p className="-mt-3 text-xs text-gray-400">
+                    For those who have not served in the military. / 군 복무 경험이 없는 분
+                  </p>
+                )}
+
+                {/* 계급 필드 (군 미복무 민간인은 해당 없음) */}
+                {!isCivilian && (
                 <div>
                   <label htmlFor="rank" className="block text-sm font-semibold text-gray-700 mb-1.5">
                     Rank / 계급 <Required />
@@ -235,8 +330,10 @@ export default function Home() {
                     </p>
                   )}
                 </div>
+                )}
 
-                {/* 복무지역 필드 */}
+                {/* 복무지역 필드 (군 미복무 민간인은 해당 없음) */}
+                {!isCivilian && (
                 <div>
                   <label htmlFor="station" className="block text-sm font-semibold text-gray-700 mb-1.5">
                     Unit Location / 복무지역
@@ -255,6 +352,7 @@ export default function Home() {
                     />
                   </div>
                 </div>
+                )}
 
                 {/* 이메일 필드 */}
                 <div>
